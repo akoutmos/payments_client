@@ -5,10 +5,17 @@ defmodule PaymentsClient.Application do
 
   use Application
 
+  alias PaymentsClient.RateLimiter
+
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: PaymentsClient.Worker.start_link(arg)
-      # {PaymentsClient.Worker, arg}
+      {Task.Supervisor, name: RateLimiter.TaskSupervisor},
+      {RateLimiter.get_rate_limiter(),
+       %{
+         timeframe_max_requests: RateLimiter.get_requests_per_timeframe(),
+         timeframe_units: RateLimiter.get_timeframe_unit(),
+         timeframe: RateLimiter.get_timeframe()
+       }}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
